@@ -45,7 +45,7 @@ jobs:
           payload: |
             {
               "channel": "#social",
-              "text": ":x: Checkov scan failed in GitHub Actions!\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
+              "text": ":x: *Terraform CI/CD failed!*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n*Commit message:* ${{ github.event.head_commit.message || github.event.pull_request.title }}\n*Error:* See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -66,7 +66,7 @@ jobs:
           payload: |
             {
               "channel": "#social",
-              "text": ":x: *Terraform CI/CD failed!*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n*Error:* See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
+              "text": ":x: *Terraform CI/CD failed!*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n*Commit message:* ${{ github.event.head_commit.message || github.event.pull_request.title }}\n*Error:* See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -78,7 +78,7 @@ jobs:
           payload: |
             {
               "channel": "#social",
-              "text": ":white_check_mark: *Terraform CI/CD succeeded!*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
+              "text": ":white_check_mark: *Terraform CI/CD succeeded!*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n*Commit message:* ${{ github.event.head_commit.message || github.event.pull_request.title }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
