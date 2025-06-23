@@ -2,7 +2,6 @@ name: Terraform CI/CD
 permissions:
   contents: read
 on:
-  workflow_dispatch:
   push:
     branches: [ main ]
   pull_request:
@@ -14,7 +13,7 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: us-east-1
+      AWS_DEFAULT_REGION: ap-south-1
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,7 +30,7 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -var-file=terraform.tfvars
+        run: terraform plan 
 
       - name: Checkov Scan
         uses: bridgecrewio/checkov-action@v12
@@ -39,31 +38,6 @@ jobs:
           directory: .
 
       - name: Terraform Apply
-        if: github.event_name == 'workflow_dispatch'
-        run: terraform apply -auto-approve -var-file=terraform.tfvars
-        env:
-          TF_VAR_ami: ${{ secrets.TF_VAR_AMI }}
-          TF_VAR_instance_type: ${{ secrets.TF_VAR_INSTANCE_TYPE }}
-          TF_VAR_key_name: ${{ secrets.TF_VAR_KEY_NAME }}
-        # Add a manual approval step before apply
-        # See below for details
-
-      - name: Terraform Destroy
-        if: github.event.inputs.destroy == 'true'
-        run: terraform destroy -auto-approve -var-file=terraform.tfvars
-        env:
-          TF_VAR_ami: ${{ secrets.TF_VAR_AMI }}
-          TF_VAR_instance_type: ${{ secrets.TF_VAR_INSTANCE_TYPE }}
-          TF_VAR_key_name: ${{ secrets.TF_VAR_KEY_NAME }}
-
-  manual-approval:
-    needs: terraform
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
-    steps:
-      - name: Wait for approval before apply/destroy
-        uses: trstringer/manual-approval@v1
-        with:
-          secret: ${{ secrets.GITHUB_TOKEN }}
-          approvers: ${{ github.actor }}
-          minimum-approvals: 1 
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve
+        
