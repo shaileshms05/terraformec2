@@ -7,11 +7,7 @@ resource "aws_instance" "this" {
   monitoring             = true
   ebs_optimized          = true
 
-  metadata_options {
-    http_tokens = "required"
-  }
+  
 
-  root_block_device {
-    encrypted = true
-  }
+  
 }
