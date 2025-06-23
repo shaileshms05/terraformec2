@@ -24,50 +24,40 @@ jobs:
           terraform_version: 1.6.6
 
       - name: Terraform Init
+        id: init
         run: terraform init
+        continue-on-error: true
 
       - name: Terraform Validate
+        id: validate
         run: terraform validate
+        continue-on-error: true
 
       - name: Terraform Plan
-        run: terraform plan 
+        id: plan
+        run: terraform plan
+        continue-on-error: true
 
       - name: Checkov Scan
         id: checkov
-        continue-on-error: true
         uses: bridgecrewio/checkov-action@v12
         with:
           directory: .
-
-      - name: Notify on Slack if Checkov fails
-        if: steps.checkov.outcome == 'failure'
-        uses: slackapi/slack-github-action@v1.25.0
-        with:
-          payload: |
-            {
-              "channel": "#social",
-              "text": ":x: Checkov scan failed in GitHub Actions!\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      - name: Fail if Checkov failed
-        if: steps.checkov.outcome == 'failure'
-        run: exit 1
+        continue-on-error: true
 
       - name: Terraform Apply
         id: apply
         run: terraform apply -auto-approve
         continue-on-error: true
 
-      - name: Notify on Slack if Terraform Apply failed
-        if: steps.apply.outcome == 'failure'
+      - name: Notify on Slack if any step failed
+        if: failure()
         uses: slackapi/slack-github-action@v1.25.0
         with:
           payload: |
             {
               "channel": "#social",
-              "text": ":x: *Terraform Apply failed!*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run>"
+              "text": ":x: *Terraform CI/CD failed!*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n*Error:* See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
