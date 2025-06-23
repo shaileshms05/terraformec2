@@ -59,14 +59,19 @@ jobs:
         #if: github.ref == 'refs/heads/main' && github.event_name == 'push' 
         run: terraform destroy -auto-approve
       
-      - name: Notify on Slack if job failed
-        if: failure()
+      - name: Get job status
+        if: always()
+        id: job_status
+        uses: amannn/action-job-status@v3
+
+      - name: Notify on Slack if job failed (but not Checkov)
+        if: failure() && steps.checkov.outcome != 'failure'
         uses: slackapi/slack-github-action@v1.25.0
         with:
           payload: |
             {
               "channel": "#social",
-              "text": ":x: *Terraform CI/CD failed!*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n*Error:* See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
+              "text": ":x: *Terraform CI/CD failed!*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n*Failed step:* ${{ steps.job_status.outputs.failedStep }}\n*Error:* ${{ steps.job_status.outputs.failedStepMessage }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run>"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
