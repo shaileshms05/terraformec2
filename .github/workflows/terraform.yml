@@ -34,12 +34,13 @@ jobs:
 
       - name: Checkov Scan
         id: checkov
+        continue-on-error: true
         uses: bridgecrewio/checkov-action@v12
         with:
           directory: .
 
       - name: Notify on Slack if Checkov fails
-        if: failure() && steps.checkov.outcome == 'failure'
+        if: steps.checkov.outcome == 'failure'
         uses: slackapi/slack-github-action@v1.25.0
         with:
           payload: |
@@ -50,28 +51,23 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+      - name: Fail if Checkov failed
+        if: steps.checkov.outcome == 'failure'
+        run: exit 1
+
       - name: Terraform Apply
-        if: failure() && steps.checkov.outcome == 'passed'
-        #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        id: apply
         run: terraform apply -auto-approve
+        continue-on-error: true
 
-      - name: Terraform Destroy
-        #if: github.ref == 'refs/heads/main' && github.event_name == 'push' 
-        run: terraform destroy -auto-approve
-      
-      - name: Get job status
-        if: always()
-        id: job_status
-        uses: amannn/action-job-status@v1.1.0
-
-      - name: Notify on Slack if job failed (but not Checkov)
-        if: failure() && steps.checkov.outcome != 'failure'
+      - name: Notify on Slack if Terraform Apply failed
+        if: steps.apply.outcome == 'failure'
         uses: slackapi/slack-github-action@v1.25.0
         with:
           payload: |
             {
               "channel": "#social",
-              "text": ":x: *Terraform CI/CD failed!*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n*Failed step:* ${{ steps.job_status.outputs.failedStep }}\n*Error:* ${{ steps.job_status.outputs.failedStepMessage }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run>"
+              "text": ":x: *Terraform Apply failed!*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run>"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
