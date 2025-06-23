@@ -62,7 +62,7 @@ jobs:
       - name: Get job status
         if: always()
         id: job_status
-        uses: amannn/action-job-status@v3
+        uses: amannn/action-job-status@v2
 
       - name: Notify on Slack if job failed (but not Checkov)
         if: failure() && steps.checkov.outcome != 'failure'
