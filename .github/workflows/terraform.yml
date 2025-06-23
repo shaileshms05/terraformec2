@@ -33,13 +33,26 @@ jobs:
         run: terraform plan 
 
       - name: Checkov Scan
+        id: checkov
         uses: bridgecrewio/checkov-action@v12
         with:
           directory: .
 
-      # - name: Terraform Apply
-      #   #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      #   run: terraform apply -auto-approve
+      - name: Notify on Slack if Checkov fails
+        if: failure() && steps.checkov.outcome == 'failure'
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "channel": "#devops-alerts",
+              "text": ":x: Checkov scan failed in GitHub Actions!\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Terraform Apply
+        #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve
 
       - name: Terraform Destroy
         #if: github.ref == 'refs/heads/main' && github.event_name == 'push' 
