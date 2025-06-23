@@ -34,5 +34,5 @@ module "ec2" {
   instance_type         = var.instance_type
   key_name              = var.key_name
   tags                  = var.tags
-  iam_instance_profile  = aws_iam_instance_profile.ec2_profile.name
+  # iam_instance_profile  = aws_iam_instance_profile.ec2_profile.name
 } 
