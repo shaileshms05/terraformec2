@@ -44,6 +44,18 @@ jobs:
         with:
           directory: .
         continue-on-error: true
+      
+      - name: Notify on Slack if any step failed
+        if: steps.checkov.outcome == 'failure'
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "channel": "#social",
+              "text": ":x: *Terraform CI/CD failed!*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n*Error:* See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Terraform Apply
         id: apply
@@ -51,7 +63,7 @@ jobs:
         continue-on-error: true
 
       - name: Notify on Slack if any step failed
-        if: failure()
+        if: failure() && steps.checkov.outcome == 'failure'
         uses: slackapi/slack-github-action@v1.25.0
         with:
           payload: |
