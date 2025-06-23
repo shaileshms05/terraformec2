@@ -44,7 +44,7 @@ jobs:
         with:
           payload: |
             {
-              "channel": "#devops-alerts",
+              "channel": "#social",
               "text": ":x: Checkov scan failed in GitHub Actions!\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Triggered by:* @${{ github.actor }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
             }
         env:
